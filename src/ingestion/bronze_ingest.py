@@ -39,7 +39,7 @@ df_customers = (
     .schema(customers_schema)
     .csv(f"{VOLUME_PATH}/customers.csv")
     .withColumn("_ingested_at", F.current_timestamp())
-    .withColumn("_source_file", F.input_file_name())
+    .withColumn("_source_file", F.col("_metadata.file_path"))
 )
 
 (
@@ -71,7 +71,7 @@ df_products = (
     .schema(products_schema)
     .csv(f"{VOLUME_PATH}/products.csv")
     .withColumn("_ingested_at", F.current_timestamp())
-    .withColumn("_source_file", F.input_file_name())
+    .withColumn("_source_file", F.col("_metadata.file_path")
 )
 
 (
