@@ -1,0 +1,39 @@
+name: CI
+
+# Runs automatically on every pull request targeting main, and on every
+# push to main. This is what enforces "tests must pass before code merges"
+# — the exact thing that couldn't run inside Databricks (Spark Connect
+# conflict) runs cleanly here, in a plain, isolated Linux environment.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Java (PySpark requires a JVM under the hood)
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Install dependencies
+        run: pip install pyspark pytest
+
+      - name: Run unit tests
+        # "python -m pytest" (not just "pytest") ensures the repo root is
+        # added to sys.path, so "from src.transformations..." imports
+        # resolve correctly — the same ModuleNotFoundError issue hit
+        # earlier when running pytest inside a Databricks notebook.
+        run: python -m pytest tests/ -v
